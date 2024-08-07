@@ -1,0 +1,33 @@
+#! /usr/bin/bash
+
+# Nome dei processi da chiudere
+PROCESS_1="bitcoind"
+PROCESS_2="b-shutoff"
+
+# Funzione per verificare se il processo è in esecuzione
+is_process_running() {
+    pgrep "$PROCESS_NAME" > /dev/null 2>&1
+}
+
+PROCESS_NAME=$PROCESS_1
+echo "Chiusura di $PROCESS_NAME"
+bitcoin-cli stop
+# Loop finché il processo è in esecuzione
+while is_process_running; do
+    echo -n "."
+    sleep 1
+done
+
+echo
+PROCESS_NAME=$PROCESS_2
+echo "Chiusura di $PROCESS_NAME"
+# Loop finché il processo è in esecuzione
+while is_process_running; do
+    echo -n "."
+    sleep 1
+done
+
+
+echo
+echo "Tutti i processi sono stati chiusi. Spegnimento in corso..."
+shutdown -h now
