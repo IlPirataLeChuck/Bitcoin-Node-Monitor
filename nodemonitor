@@ -4,7 +4,7 @@ source "nodemonitor.func"
 source "nodemonitor.conf"
 
 daemon="bitcoind" #Nome del daemon da verificare
-
+export LC_NUMERIC=en_US.UTF-8
 COLUMNS=`tput cols`
 ROWS=`tput lines`
 
@@ -45,6 +45,12 @@ fi
 
 while :
 do
+
+# Ottenere l'indirizzo IP pubblico usando curl
+public_ip=$(curl -s ifconfig.me)
+
+# Ottenere l'indirizzo IP locale usando ip
+local_ip=$(ip a | grep 'inet ' | grep -v '127.0.0.1' | awk '{print $2}' | cut -d/ -f1)
 
 if [ $firstrun == true ] ; then
  echo "Getting blockchain info..."
@@ -240,7 +246,7 @@ if [ $read_ok == true ] ; then
   BLOCCHI_RTEXT="Bitcoin totali minati: $bitcoin_minati ($PERCENT%)"
  fi
  lr_text "$BLOCCHI_LTEXT" "$BLOCCHI_RTEXT"
- lr_text "" "$EURPRICETXT" "" "cyan bold"
+ lr_text "IP (loc/pub): $local_ip / $public_ip" "$EURPRICETXT" "" "cyan bold"
  echo
 
  NOW=$(date +%s)
