@@ -27,7 +27,14 @@ while is_process_running; do
     sleep 1
 done
 
-
+#Con "nodeshutdown -r" fa il reboot anzichè lo spegnimento
+if [ $# -gt 0 ] && [ $1 -eq "r" ]; then
+  OPERAZIONE="Riavvio"
+  COMANDO="reboot"
+else
+  OPERAZIONE="Spegnimento"
+  COMANDO="shutdown -h now"
+fi
 echo
-echo "Tutti i processi sono stati chiusi. Spegnimento in corso..."
-shutdown -h now
+echo "Tutti i processi sono stati chiusi. $OPERAZIONE in corso..."
+$COMANDO
