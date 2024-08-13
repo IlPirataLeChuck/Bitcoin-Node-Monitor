@@ -73,6 +73,7 @@ if [ $read_ok = true ] ; then
   HEADERS=`echo $BC | jq '.headers'`
   SIZE=`echo $BC | jq '.size_on_disk'`
   CHAIN=`echo $BC | jq '.chain'`
+  VERIFICATION_PROGRESS=`echo $BC | jq '.verificationprogress'`
 
   VERSION=`echo $NW | jq '.version'`
   SUBVERSION=`echo $NW | jq '.subversion'`
@@ -86,6 +87,8 @@ if [ $read_ok = true ] ; then
   blocchi_locali=$(print_number $BLOCKS)
   blocchi_mancanti=$(print_number $MANCANTI)
   LAST_BLOCK_NUMBER=$BLOCKS
+  #blocks_progress=$(echo "scale=2; (($blocchi_locali*100)/$blocchi_totali )"|bc)
+  blocks_progress=$(echo "scale=2; ($VERIFICATION_PROGRESS*100/1)" | bc )
 
 ##################
 # VALORE BTC EUR #
@@ -106,7 +109,7 @@ if [ $read_ok = true ] ; then
     BTCPRICEFORMAT=$(print_number $BTCPRICEFORMAT)
 
     BTCSATS=100000000
-    BTCPRICETXT="1$BTCSYM $EURSYM$BTCPRICEFORMAT (%$BTCPRICECHANGE)"
+    BTCPRICETXT="1$BTCSYM $EURSYM$BTCPRICEFORMAT ($BTCPRICECHANGE%)"
     PRICECHECK=$(echo "$BTCPRICELAST > $BTCPRICE24H" | bc -l)
     if [ $PRICECHECK -eq 1 ]; then
       BTCCOLOR="green"
@@ -128,7 +131,7 @@ if [ $read_ok = true ] ; then
       EUR_CONV=$(print_number $EUR_CONV)
       euro=$(print_number $euro)
       if [ $firstcycle == false ]; then EURPRICETXT+=$(echo -n " | "); fi
-      EURPRICETXT+=$(echo -n "€$euro = $SYMBOL$EUR_CONV")
+      EURPRICETXT+=$(echo -n "$euro$EURSYM = $EUR_CONV$SYMBOL")
       firstcycle=false
     done
     ########################################
@@ -206,9 +209,14 @@ if [ $read_ok == true ] ; then
  VER=$(echo "Versione corrente: $VERSION $SUBVERSION")
  UPT=$(echo "Uptime: $UPTIME")
  lr_text "$VER" "$UPT"
-
+ 
+ #Dimensione blockchain
+ #SIZE viene dato da bitcoin-core, ma contiene solo i blocchi (esclusi txindexes e tutto il resto)
+ #REAL_SIZE calcola lo spazio effettivo occupato su disco 
+ REAL_SIZE=$(du -sbL $BLOCKCHAIN 2>/dev/null | cut -f1)
+ HR_REAL_SIZE=$(human_readable_bytes $REAL_SIZE)
  HR_SIZE=$(human_readable_bytes $SIZE)
- SIZE_LABEL="Dimensione Blockchain: $HR_SIZE"
+ SIZE_LABEL="Dimensione Blockchain: $HR_SIZE (reale: $HR_REAL_SIZE)"
 
 
  STATUS_LABEL="Stato del network: "
@@ -226,7 +234,7 @@ if [ $read_ok == true ] ; then
 
  if [[ $MANCANTI -gt 0 ]]; then
   BLOCCHI_LTEXT="Blocchi totali/locali: $blocchi_totali / $blocchi_locali"
-  BLOCCHI_RTEXT="Mancanti: $blocchi_mancanti"
+  BLOCCHI_RTEXT="Mancanti: $blocchi_mancanti ($blocks_progress%)"
  else
   BLOCCHI_LTEXT="Blocchi totali: $blocchi_totali"
   MINED=$(mined_bitcoins $BLOCKS)
