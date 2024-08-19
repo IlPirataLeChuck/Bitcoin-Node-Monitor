@@ -265,38 +265,41 @@ if [ $read_ok == true ] ; then
     MP_USAGE=`echo $MP | jq '.usage'`
     MP_FEES=`echo $MP | jq '.total_fee'`
 
-    #### FEES ###################################
-    FEES_TXT="Stima fees (blocchi->sat/vB)"
-    for num_block_fees in "${STIMA_BLOCCHI[@]}"; do
-      STIMA=`$CLI estimatesmartfee $num_block_fees`
-      FEE_BTC=$(echo "$STIMA" | jq -c '.feerate' | xargs printf "%f")
-      FEE_SATS_KVB=$(echo "($FEE_BTC * 100000000)/1" | bc)
-      FEE_SATS_VB=$(echo "scale=2; $FEE_SATS_KVB/1024" | bc)
-      FEES_TXT+=" | $num_block_fees -> $FEE_SATS_VB"
-    done
-    ##############################################
+    if [[ $MP_SIZE -gt 0 ]]; then
+
+      #### FEES ###################################
+      FEES_TXT="Stima fees (blocchi->sat/vB)"
+      for num_block_fees in "${STIMA_BLOCCHI[@]}"; do
+        STIMA=`$CLI estimatesmartfee $num_block_fees`
+        FEE_BTC=$(echo "$STIMA" | jq -c '.feerate' | xargs printf "%f")
+        FEE_SATS_KVB=$(echo "($FEE_BTC * 100000000)/1" | bc)
+        FEE_SATS_VB=$(echo "scale=2; $FEE_SATS_KVB/1024" | bc)
+        FEES_TXT+=" | $num_block_fees -> $FEE_SATS_VB"
+      done
+      ##############################################
 
 
-    if [[ $media_tx_per_block -eq 0 ]]; then
-      ntx_medie_txt=""
-      n_blocchi_txt=""
-    else
-      ntx_medie_txt="Media transazioni per blocco: $media_tx_per_block"
-      n_blocchi=$((MP_SIZE/media_tx_per_block))
-      n_blocchi_txt="Stima blocchi nella mempool: $n_blocchi"
+      if [[ $media_tx_per_block -eq 0 ]]; then
+        ntx_medie_txt=""
+        n_blocchi_txt=""
+      else
+        ntx_medie_txt="Media transazioni per blocco: $media_tx_per_block"
+        n_blocchi=$((MP_SIZE/media_tx_per_block))
+        n_blocchi_txt="Stima blocchi nella mempool: $n_blocchi"
+      fi
+
+      ntx_txt="Numero transazioni in mempool: $MP_TX_NUM"
+      dim_tx_txt="Dimensione totale transazioni: $MP_HR_BYTES"
+
+      change_color bold red_bg
+      centertext_fullrow "MEMPOOL" "*"
+      change_color reset
+      echo
+      lr_text "$ntx_txt" "$ntx_medie_txt"
+      lr_text "$dim_tx_txt" "$n_blocchi_txt"
+      lr_text "Fees totali: $MP_FEES BTC" "$FEES_TXT" "" "purple bold"
+      echo
     fi
-
-    ntx_txt="Numero transazioni in mempool: $MP_TX_NUM"
-    dim_tx_txt="Dimensione totale transazioni: $MP_HR_BYTES"
-
-    change_color bold red_bg
-    centertext_fullrow "INFO" "*"
-    change_color reset
-    echo
-    lr_text "$ntx_txt" "$ntx_medie_txt"
-    lr_text "$dim_tx_txt" "$n_blocchi_txt"
-    lr_text "Fees totali: $MP_FEES BTC" "$FEES_TXT" "" "purple bold"
-    echo
  fi
 ###########################
 ## DIFFICULTY ADJUSTMENT ##
