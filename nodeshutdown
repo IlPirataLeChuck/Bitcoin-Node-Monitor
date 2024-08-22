@@ -28,7 +28,7 @@ while is_process_running; do
 done
 
 #Con "nodeshutdown -r" fa il reboot anzichè lo spegnimento
-if [ $# -gt 0 ] && [ $1 -eq "r" ]; then
+if [ $# -gt 0 ] && [ $1 == "-r" ]; then
   OPERAZIONE="Riavvio"
   COMANDO="reboot"
 else
