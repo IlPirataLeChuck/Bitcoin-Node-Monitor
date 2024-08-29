@@ -1,8 +1,14 @@
 #! /usr/bin/bash
 
+# Forza la richiesta della password all'inizio
+sudo -v
+
 # Nome dei processi da chiudere
 PROCESS_1="bitcoind"
 PROCESS_2="b-shutoff"
+
+# Attesa in secondi prima dello spegnimento/ravvio
+TIMEOUT=7
 
 # Funzione per verificare se il processo è in esecuzione
 is_process_running() {
@@ -30,11 +36,13 @@ done
 #Con "nodeshutdown -r" fa il reboot anzichè lo spegnimento
 if [ $# -gt 0 ] && [ $1 == "-r" ]; then
   OPERAZIONE="Riavvio"
-  COMANDO="reboot"
+  COMANDO="sudo reboot"
 else
   OPERAZIONE="Spegnimento"
-  COMANDO="shutdown -h now"
+  COMANDO="sudo shutdown -h now"
 fi
 echo
-echo "Tutti i processi sono stati chiusi. $OPERAZIONE in corso..."
+echo -e "\a"
+echo "Tutti i processi sono stati chiusi. $OPERAZIONE in $TIMEOUT secondi..."
+sleep $TIMEOUT
 $COMANDO
